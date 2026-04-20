@@ -19,5 +19,10 @@ app.get("/",(req,res)=>{
 
 
 
+///export health route 
+import  healthroute from "./routes/healthcheck.routes.js"
+
+app.use("/api/v1/healthcheck", healthroute)
+
 
 export default app;

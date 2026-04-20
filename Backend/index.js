@@ -11,11 +11,12 @@ const PORT  = process.env.PORT || 8000
 // connecting to the mongoose then starting the backend
 connectDb()
 .then(()=>{
-   
+
     app.listen(process.env.PORT,() => { 
         console.log(`Backend successfully started and running on http://localhost:${PORT}`)
      })
 })
+
 
 
 
