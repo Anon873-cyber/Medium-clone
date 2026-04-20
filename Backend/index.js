@@ -9,7 +9,7 @@ dotenv.config({
 const PORT  = process.env.PORT || 8000
 
 // connecting to the mongoose then starting the backend
-connectDb
+connectDb()
 .then(()=>{
    
     app.listen(process.env.PORT,() => { 
