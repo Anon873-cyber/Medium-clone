@@ -1,4 +1,6 @@
-const Appwrite = require('appwrite');
+import Appwrite from 'appwrite';
+
+
 
 
 class UserServices {
