@@ -12,14 +12,6 @@ const UserSchema = new Schema({
             type: String
         }
     },
-
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        minLength: 5,
-        maxLength: 20
-    },
     username:{
         type:String,
         required:true,
@@ -36,12 +28,6 @@ const UserSchema = new Schema({
         trim: true,
         lowercase: true
     },
-
-    password: {
-        type: String,
-        required: true,
-        minLength: 8
-    },
     password:{
         type:String,
         required:true,
@@ -51,7 +37,7 @@ const UserSchema = new Schema({
     refreshToken: {
         type: [String]
     }
-})
+},{timestamps:true})
 
 
 //hash the password
@@ -66,13 +52,13 @@ UserSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 // change the refresh token
-UserSchema.method.generateAccessToken = async function () {
-    return jwt.sign({
-
+UserSchema.methods.generateAccessToken = async function () {
+    return jwt.sign(
+        {
         _id: this._id
-    },
+        },
      process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn:process.env.REFRESH_TOKEN_EXPIRY}
     )
     
 }
