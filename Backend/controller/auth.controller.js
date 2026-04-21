@@ -52,12 +52,61 @@ return res
         createUser
     )
 )
-
 })
 
 
 const LoginUser = asyncHandler(async(req , res)=>{
+
+    const {email,password} = req.body
+
+    if(!email || !password){
+        throw new ApiError(
+            404,
+            "Please provide email and password"
+        )
+    }
+
+    const user = await User.findOne({email})
+
+    if(!user){
+        throw new ApiError(
+            400,
+            "Please provide a valid email user with this email does not exist"
+        )
+    }
     
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(
+            400,
+            "invalid password provide correct password ",
+        )
+    }
+
+    const accessToken = await user.generateAccessToken()
+
+
+    const LoginedUser = await User.findById(user._id).select(
+          "-password -refreshToken"
+    )
+
+    //make the cookie secure  
+    const options = {
+        httpOnly:true,
+        secure:true
+    }
+    
+    return res
+    .status(200)
+    .cookie("accessToken",accessToken,options)
+    .json(
+        new ApiResponse(
+            200,
+            "User logged in successfully",
+            LoginedUser,
+        )
+    )   
 })
 
 const LogoutUser = asyncHandler(async(req , res)=>{
