@@ -1,22 +1,26 @@
-import jwt from 'jsonwebtoken';
-import { ApiError } from '../utils/api-Error.js';
-import AsyncHandler from '../utils/Async-handler.js'
+import jwt from "jsonwebtoken";
+import { ApiError } from "../utils/api-Error.js";
+import AsyncHandler from "../utils/Async-handler.js";
 
 const requireAuth = AsyncHandler(async (req, res, next) => {
 
+    const accessToken = req.cookies?.accessToken;
 
-    const accessToken = req.cookie?.accessToken
+    if (!accessToken) {
+        throw new ApiError(401, "Access token missing", "Unauthorized");
+    }
 
-    if (!accessToken) throw new ApiError(400, "Faild to login: Access token is missing", "Bad Request");
+    let decoded;
 
-    const decoded = jwt.verify(accessToken);
+    try {
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+        throw new ApiError(401, "Invalid or expired token", "Unauthorized");
+    }
 
-    if (!decoded) throw new ApiError(401,"Access token is expired","Unauthorized");
+    req.userId = decoded.id; 
 
-        req.userId = decoded
-   
+    next();
 });
 
-
-
-
+export default requireAuth;
