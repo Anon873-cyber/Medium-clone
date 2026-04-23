@@ -1,6 +1,9 @@
 import mongoose, { Schema } from "mongoose"
-import bcrypt from "bcryptjs"
+import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const UserSchema = new Schema({
     avatar: {
@@ -12,16 +15,14 @@ const UserSchema = new Schema({
             type: String
         }
     },
-
-
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true,
-        minLength: [5, "USername must be at least 5 characters"],
-        maxLength: [20, "Username cannot exceed 20 characters"]
+    username:{
+        type:String,
+        required:true,
+        unique:true,
+        trim:true,
+        lowercase:true,
+        minLength:[5,"USername must be at least 5 characters"],
+        maxLength:[20,"Username cannot exceed 20 characters"]
     },
     email: {
         type: String,
@@ -30,18 +31,16 @@ const UserSchema = new Schema({
         trim: true,
         lowercase: true
     },
-
-
-    password: {
-        type: String,
-        required: true,
-        minLength: [8, "Password must be at least 8 characters"]
+    password:{
+        type:String,
+        required:true,
+        minLength:[8,"Password must be at least 8 characters"]
     },
 
     refreshToken: {
         type: [String]
     }
-})
+},{timestamps:true})
 
 
 //hash the password
@@ -56,10 +55,10 @@ UserSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 // change the refresh token
-
 UserSchema.methods.generateAccessToken = async function () {
-    return jwt.sign({
 
+    return jwt.sign(
+        {
         _id: this._id
     },
         process.env.ACCESS_TOKEN_SECRET,
@@ -84,6 +83,27 @@ UserSchema.methods.generateRefreshToken = async function () {
     return token
 
 }
+
+UserSchema.methods.generateRefreshToken = async function(){
+    return jwt.sign(
+        {
+         _id:this._id   
+        },
+       process.env.REFRESH_TOKEN_SECRET,
+        {expiresIn:"7d"}
+    )
+
+}
+
+
+let check = {
+    1:process.env.ACCESS_TOKEN_SECRET,
+    2:process.env.REFRESH_TOKEN_SECRET,
+    3:process.env.ACCESS_TOKEN_EXPIRY,
+    4:process.env.REFRESH_TOKEN_EXPIRY
+}
+
+console.log(check)
 
 
 

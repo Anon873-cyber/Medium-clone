@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 
 const connectDb = async()=>{
-    await mongoose.connect(process.env.MONGOURI)
+    await mongoose.connect(process.env.DBURI)
 }
 
 
