@@ -21,7 +21,7 @@ const UserSchema = new Schema({
         unique:true,
         trim:true,
         lowercase:true,
-        minLength:[5,"USername must be at least 5 characters"],
+        minLength:[5,"Username must be at least 5 characters"],
         maxLength:[20,"Username cannot exceed 20 characters"]
     },
     email: {
@@ -67,22 +67,6 @@ UserSchema.methods.generateAccessToken = async function () {
 
 }
 
-UserSchema.methods.generateRefreshToken = async function () {
-
-    const token = await jwt.sign(
-        {
-            _id: this._id
-        },
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-            expiresIn: "7d"
-        }
-    )
-
-    this.refreshToken = token
-    return token
-
-}
 
 UserSchema.methods.generateRefreshToken = async function(){
     return jwt.sign(
@@ -96,14 +80,6 @@ UserSchema.methods.generateRefreshToken = async function(){
 }
 
 
-let check = {
-    1:process.env.ACCESS_TOKEN_SECRET,
-    2:process.env.REFRESH_TOKEN_SECRET,
-    3:process.env.ACCESS_TOKEN_EXPIRY,
-    4:process.env.REFRESH_TOKEN_EXPIRY
-}
-
-console.log(check)
 
 
 
