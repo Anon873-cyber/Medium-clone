@@ -60,11 +60,28 @@ UserSchema.methods.generateAccessToken = async function () {
     return jwt.sign(
         {
         _id: this._id
-        },
+    },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn:"15m"}
+        { expiresIn: "1d" }
     )
-    
+
+}
+
+UserSchema.methods.generateRefreshToken = async function () {
+
+    const token = await jwt.sign(
+        {
+            _id: this._id
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: "7d"
+        }
+    )
+
+    this.refreshToken = token
+    return token
+
 }
 
 UserSchema.methods.generateRefreshToken = async function(){
