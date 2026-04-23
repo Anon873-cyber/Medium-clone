@@ -55,17 +55,37 @@ UserSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 // change the refresh token
+<<<<<<< HEAD
 
+=======
+>>>>>>> 85b2455d3f1704c22a333c25b1fbf63022e4a33c
 UserSchema.methods.generateAccessToken = async function () {
 
     return jwt.sign(
         {
         _id: this._id
-        },
+    },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn:"15m"}
+        { expiresIn: "1d" }
     )
-    
+
+}
+
+UserSchema.methods.generateRefreshToken = async function () {
+
+    const token = await jwt.sign(
+        {
+            _id: this._id
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: "7d"
+        }
+    )
+
+    this.refreshToken = token
+    return token
+
 }
 
 UserSchema.methods.generateRefreshToken = async function(){
