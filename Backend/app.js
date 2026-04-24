@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser"
+import multer from "multer"
 
 const app = express();
 
@@ -13,6 +14,19 @@ app.use(cors())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 
+// to serve static files 
+const storage = multer.diskStorage({
+    destination:(req,file,cb) =>{
+        cb(null,"uploads/")
+    },
+    filename:(req,file,cb) =>{
+        cb(null,file.originalname)
+    }
+
+})
+
+
+const upload = multer({storage})
 
 app.get("/",(req,res)=>{
     res
