@@ -1,12 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser"
-import multer from "multer"
 
 const app = express();
 
-//basic setup for express server
-app.use(cors())
+    //basic setup for express server
+    app.use(cors())
     //to parse json to object
     app.use(express.json())
 
@@ -14,19 +13,6 @@ app.use(cors())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 
-// to serve static files 
-const storage = multer.diskStorage({
-    destination:(req,file,cb) =>{
-        cb(null,"uploads/")
-    },
-    filename:(req,file,cb) =>{
-        cb(null,file.originalname)
-    }
-
-})
-
-
-const upload = multer({storage})
 
 app.get("/",(req,res)=>{
     res
@@ -42,13 +28,18 @@ app.get("/helloworld",(req,res)=>{
 
 
 
-// /export health route 
+// /import health routes
 import healthRoute  from "./routes/healthcheck.routes.js"
 app.use("/api/v1/health",healthRoute)
 
 // // import auth routes
 import authRoutes from "./routes/auth.routes.js"
 app.use("/api/v1/auth",authRoutes)
+
+
+// import blog routes
+import blogRoutes from "./routes/blog.routes.js"
+app.use("/api/v1/blog",blogRoutes)
 
 
 export default app;
