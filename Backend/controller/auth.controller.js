@@ -5,43 +5,86 @@ import { ApiResponse } from "../utils/api-Response.js";
 import jwt from "jsonwebtoken"
 import generateOTP from "../configs/OtpGenerator.js";
 import { otpMailSender } from "../configs/OtpMailSender.js";
-import OTPModel from "../model/OTP.model.js";
+import Otp from "../model/OTP.model.js";
 import { PendingUser } from "../model/PendingUser.Models.js";
 
 
 const RegisterTempUser = asyncHandler(async (req, res) => {
-    //give me username or email &&  password
-    const { username, email, password } = req.body
+    const { username, email, password, changeOtp } = req.body;
 
-    //   check if user exist in the DB
-    const checkUser = await User.findOne({
+    // check if already registered user exists
+    const existingUser = await User.findOne({
         $or: [{ username }, { email }]
-    })
-
-    if (checkUser) {
-        throw new ApiError(
-            401,
-            "User with this email or username already exist"
-        )
-    }
-    // generating otp and verify it to protect the applications form fake mails 
-    const otp = generateOTP()
-    const isOtpSent = await otpMailSender(otp, email)
-    if (!isOtpSent) throw new ApiError(500, "unable to deliver the otp ")
-
-    const otp = await OTPModel.create({
-        otp, email
-    })
-
-    const pendingUser = await PendingUser.createOne({
-        username, email, password, otp: otp._id
     });
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, "Otp sent successfully, verify the otp"));
+    if (existingUser) {
+        throw new ApiError(401, "User already exists");
+    }
 
+    // check if pending user exists
+    let pendingUser = await PendingUser.findOne({ email });
 
+    // ==============================
+    // 🔁 CHANGE OTP FLOW
+    // ==============================
+    if (changeOtp && pendingUser) {
+
+        // delete old otp
+        await Otp.findByIdAndDelete(pendingUser.otp);
+
+        // generate new otp
+        const newOtpValue = generateOTP();
+
+        const newOtp = await Otp.create({
+            otp: newOtpValue,
+            email
+        });
+
+        // update otp reference
+        pendingUser.otp = newOtp._id;
+        await pendingUser.save();
+
+        // resend email
+        const isSent = await otpMailSender(newOtpValue, email);
+        if (!isSent) throw new ApiError(500, "OTP resend failed");
+
+        return res.status(200).json(
+            new ApiResponse(200, "New OTP sent successfully")
+        );
+    }
+
+    // ==============================
+    // 🆕 NEW REGISTRATION FLOW
+    // ==============================
+
+    const otpValue = generateOTP();
+
+    const isOtpSent = await otpMailSender(otpValue, email);
+    if (!isOtpSent) {
+        throw new ApiError(500, "Unable to send OTP");
+    }
+
+    const otpDoc = await Otp.create({
+        otp: otpValue,
+        email
+    });
+
+    // delete old pending user if exists (optional cleanup)
+    if (pendingUser) {
+        await Otp.findByIdAndDelete(pendingUser.otp);
+        await PendingUser.findByIdAndDelete(pendingUser._id);
+    }
+
+    pendingUser = await PendingUser.create({
+        username,
+        email,
+        password,
+        otp: otpDoc._id
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, "OTP sent successfully, verify it")
+    );
 });
 
 const RegisterUser = asyncHandler(async (req, res) => {
