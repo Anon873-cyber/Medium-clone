@@ -1,93 +1,55 @@
-import mongoose, { Schema } from "mongoose"
-import bcrypt from "bcrypt"
-import jwt from 'jsonwebtoken'
-import dotenv from "dotenv"
+import { User } from "../model/User.Model.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-dotenv.config()
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  const file = req.file;
 
-const UserSchema = new Schema({
-    avatar: {
-        url: {
-            type: String,
-            default: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-        },
-        public_id: {
-            type: String
-        }
-    },
-    username:{
-        type:String,
-        required:true,
-        unique:true,
-        trim:true,
-        lowercase:true,
-        minLength:[5,"Username must be at least 5 characters"],
-        maxLength:[20,"Username cannot exceed 20 characters"]
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true
-    },
-    password:{
-        type:String,
-        required:true,
-        minLength:[8,"Password must be at least 8 characters"]
-    },
+  const user = await User.findById(userId);
 
-    refreshToken: {
-        type: [String]
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  let updatedAvatar = user.avatar;
+
+  // 1. If new image uploaded
+  if (file) {
+    const uploadResult = await uploadOnCloudinary(file.path);
+
+    // 2. Delete old image from cloudinary (if exists)
+    if (user.avatar?.public_id) {
+      await deleteFromCloudinary(user.avatar.public_id);
     }
-},{timestamps:true})
 
+    // 3. Replace avatar
+    updatedAvatar = {
+      url: uploadResult.secure_url,
+      public_id: uploadResult.public_id,
+    };
+  }
 
-//hash the password
-UserSchema.pre("save", async function () {
-    if (!this.isModified("password")) return
-    this.password = await bcrypt.hash(this.password, 10)
-})
+  // 4. Update other fields if needed
+  const updateData = {
+    avatar: updatedAvatar,
+  };
 
-// compare the password 
-UserSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)
-}
+  if (req.body.username) updateData.username = req.body.username;
+  if (req.body.bio) updateData.bio = req.body.bio;
 
-// change the refresh token
+  // 5. Save update
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  ).select("-password");
 
-UserSchema.methods.generateAccessToken = async function () {
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    user: updatedUser,
+  });
+});
 
-    return jwt.sign(
-        {
-        _id: this._id
-    },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1d" }
-    )
-
-}
-
-
-UserSchema.methods.generateRefreshToken = async function(){
-    return jwt.sign(
-        {
-         _id:this._id   
-        },
-       process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn:"7d"}
-    )
-
-}
-
-
-
-
-
-
-const User = mongoose.model("User", UserSchema)
-
-
-export {
-    User
-}
+export { updateUserProfile };
