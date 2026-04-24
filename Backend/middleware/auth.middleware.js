@@ -8,6 +8,8 @@ const VerifyJwt = asyncHandler(async(req ,res ,next)=>{
   
      //grab the token from the cookie
     const token = req.cookies.accessToken  || req.header("Authorization")?.replace("Bearer ", "");
+    console.log(token)
+
     //throw if not present
     if(!token){
         throw new ApiError(
@@ -15,9 +17,10 @@ const VerifyJwt = asyncHandler(async(req ,res ,next)=>{
             "Unauthorized Access"
         )
     }
+    console.log("At",process.env.ACCESS_TOKEN_EXPIRY)
     //decoded it verify it with the key
-    const decoded_token = jwt.verify(token,process.env.ACCESS_TOKEN_EXPIRY)
-
+    const decoded_token = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
+    console.log("check",decoded_token)
     if(!decoded_token){
         throw new ApiError(
             404,

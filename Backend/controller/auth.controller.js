@@ -171,23 +171,22 @@ const DeleteUser = asyncHandler(async(req , res)=>{
 
 })
 const refreshAccessToken = asyncHandler(async(req , res)=>{
-    const RT= req.cookies.refreshToken || req.body.refreshToken
-    if(!RT){
+        const RT= req.cookies.refreshToken || req.body.refreshToken
+        if(!RT){
         throw new ApiError(404,"Unauthorized access")
-    }
-    try {
-        const decode = jwt.verify(RT,REFRESH_TOKEN_SECRET)
+        }
+        const decode = jwt.verify(RT,process.env.REFRESH_TOKEN_SECRET)
         if(!decode){
-           throw new ApiError(404,"invalid token")
+           throw new ApiError(401,"invalid token")
         }
         const user = await User.findById(decode._id)
         if(!user){
-           throw new ApiError(404,"Invalid token user with this token not found")
+           throw new ApiError(401,"Invalid token user with this token not found")
         }
-
-        if(RT!==user.refreshToken){
+        if(String(RT)!==String(user.refreshToken)){
            throw new ApiError("Refresh Token is expired")
         }
+
         const options = {
           httpOnly:true,
           secure:true
@@ -209,11 +208,17 @@ const refreshAccessToken = asyncHandler(async(req , res)=>{
                 "Token refreshed successfully",
             )  
     )       
-    } catch (error) {
-        new ApiError(404,"Unauthorized access")
-    }
-
 })
+
+
+// let check = {
+//     1:process.env.ACCESS_TOKEN_SECRET,
+//     2:process.env.REFRESH_TOKEN_SECRET,
+//     3:process.env.ACCESS_TOKEN_EXPIRY,
+//     4:process.env.REFRESH_TOKEN_EXPIRY
+// }
+
+// console.log(check)
 
 
 
