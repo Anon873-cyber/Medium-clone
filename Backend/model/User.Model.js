@@ -1,55 +1,96 @@
-import { User } from "../model/User.Model.js";
-import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-const updateUserProfile = asyncHandler(async (req, res) => {
-  const userId = req.user?._id;
-  const file = req.file;
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      index: true,
+    },
 
-  const user = await User.findById(userId);
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
+    },
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+
+    avatar: {
+      url: {
+        type: String,
+        default:
+          "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      },
+      public_id: {
+        type: String,
+      },
+    },
+   
+    refreshToken: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
   }
+);
 
-  let updatedAvatar = user.avatar;
 
-  // 1. If new image uploaded
-  if (file) {
-    const uploadResult = await uploadOnCloudinary(file.path);
+// 🔐 Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
 
-    // 2. Delete old image from cloudinary (if exists)
-    if (user.avatar?.public_id) {
-      await deleteFromCloudinary(user.avatar.public_id);
-    }
-
-    // 3. Replace avatar
-    updatedAvatar = {
-      url: uploadResult.secure_url,
-      public_id: uploadResult.public_id,
-    };
-  }
-
-  // 4. Update other fields if needed
-  const updateData = {
-    avatar: updatedAvatar,
-  };
-
-  if (req.body.username) updateData.username = req.body.username;
-  if (req.body.bio) updateData.bio = req.body.bio;
-
-  // 5. Save update
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    { $set: updateData },
-    { new: true, runValidators: true }
-  ).select("-password");
-
-  res.status(200).json({
-    success: true,
-    message: "Profile updated successfully",
-    user: updatedUser,
-  });
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
-export { updateUserProfile };
+
+// 🔑 Compare password
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+
+// 🔐 Generate Access Token
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m",
+    }
+  );
+};
+
+
+// 🔄 Generate Refresh Token
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
+    }
+  );
+};
+
+
+export const User = mongoose.model("User", userSchema);
