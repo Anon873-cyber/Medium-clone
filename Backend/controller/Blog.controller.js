@@ -4,7 +4,8 @@ import { ApiResponse } from "../utils/api-Response";
 import asyncHandler from "../utils/Async-handler";
 import { uploadOnCloudinary } from "../utils/cloudinary";
 
-const createBlog = asyncHandler((req, res) => {
+const createBlog = asyncHandler(async (req, res) => {
+
     const { title, body, tags } = req.body
     const thumbnail = req.files?.thumbnail?.[0]
     let uploadedThumbnailImage = null
@@ -20,6 +21,22 @@ const createBlog = asyncHandler((req, res) => {
 
 });
 
+const getBlogs = asyncHandler(async (req, res) => {
+
+    const blogId = req.params?.blogId
+    let blog
+    if (blogId) {
+        blog = await Blog.findById(blogId)
+    } else {
+      blog = await Blog.find()
+    }
+    if (!blog) {
+        throw new ApiError(500,'unable to find blog check the id or internal server error')
+    }
+
+    res.status(200).json(new ApiResponse(200,"blogs fetched successfully",blog))
+
+})
 
 
 const updateBlog = asyncHandler(async (req, res) => {
@@ -63,9 +80,9 @@ const updateBlog = asyncHandler(async (req, res) => {
     );
 });
 
-const deleteBlog = asyncHandler(async (req,res) => { 
+const deleteBlog = asyncHandler(async (req, res) => {
 
-       const { blogId } = req.params;
+    const { blogId } = req.params;
 
     if (!blogId) {
         throw new ApiError(400, "Blog ID is required");
@@ -73,13 +90,13 @@ const deleteBlog = asyncHandler(async (req,res) => {
 
     const deleteBlog = Blog.findByIdAndDelete(blog)
     if (!deleteBlog) {
-        
-        throw new ApiError(401,"invalid blog id , unable to delete blog ")
+
+        throw new ApiError(401, "invalid blog id , unable to delete blog ")
     }
-    return res.status(204,"blog deleted successfully")
+    return res.status(204, "blog deleted successfully")
 
- });
+});
 
 
 
-export { updateBlog,createBlog,deleteBlog };
+export { updateBlog, createBlog, deleteBlog,getBlogs };
