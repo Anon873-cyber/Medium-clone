@@ -1,14 +1,14 @@
 import { Router } from "express";
 
-import { createBlog,deleteBlog,getBlogs,updateBlog } from "../controller/Blog.controller";
+import { createBlog,deleteBlog,getBlogs,updateBlog } from "../controller/Blog.controller.js";
 
-import { upload } from "../middlewares/Multer.middlewere";
-import requireAuth from "../middlewares/Auth.middlewere";
+import { upload } from "../middlewares/Multer.middlewere.js";
+import requireAuth from "../middlewares/Auth.middlewere.js";
 
 
 const router = Router();
 // local middleweres
-router.use(requireAuth())
+router.use(requireAuth)
 
 
 // Create a blog
@@ -18,7 +18,7 @@ router.route('/').get(getBlogs)
 // Get single blog
 router.route('/:blogId').get(getBlogs)
 // Update blog
-router.route('/:blogId').put(upload)
+router.route('/:blogId').put(upload.single('thumbnail'),updateBlog)
 // Delete blog
 router.route('/:blogId').delete(deleteBlog)
 

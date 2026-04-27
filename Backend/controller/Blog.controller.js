@@ -1,8 +1,8 @@
-import { Blog } from "../model/Blog.Models";
-import { ApiError } from "../utils/api-Error";
-import { ApiResponse } from "../utils/api-Response";
-import asyncHandler from "../utils/Async-handler";
-import { deleteCloudinaryImage, uploadOnCloudinary } from "../utils/cloudinary";
+import { Blog } from "../model/Blog.Models.js";
+import { ApiError } from "../utils/api-Error.js";
+import { ApiResponse } from "../utils/api-Response.js";
+import asyncHandler from "../utils/Async-handler.js";
+import { deleteCloudinaryImage, uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createBlog = asyncHandler(async (req, res) => {
 

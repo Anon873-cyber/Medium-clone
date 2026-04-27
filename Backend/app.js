@@ -14,27 +14,13 @@ app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 
 
-app.get("/",(req,res)=>{
-    res
-    .status(200)
-    .send("Home route of the backend")
-})
-
-app.get("/helloworld",(req,res)=>{
-    res
-    .status(200)
-    .send("Hello World! Wellcome here ")
-})
-
-
-
-// /export health route 
-import healthRoute  from "./routes/healthcheck.routes.js"
-app.use("/api/v1/health",healthRoute)
-
 // // import auth routes
 import authRoutes from "./routes/auth.routes.js"
-app.use("/api/v1/auth",authRoutes)
+app.use("api/v1/user",authRoutes)
+
+// import Blog routes
+import blogroutes from "./Routes/Blog.routes.js"
+app.use("api/v1/blog/",blogroutes)
 
 
 export default app;
