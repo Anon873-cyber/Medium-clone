@@ -7,12 +7,24 @@ import { deleteCloudinaryImage, uploadOnCloudinary } from "../utils/cloudinary.j
 const createBlog = asyncHandler(async (req, res) => {
 
     const { title, body, tags } = req.body
-    const thumbnail = req.files?.thumbnail
+    const thumbnail = req.file.path
     let uploadedThumbnailImage = null
     if (thumbnail) {
         uploadedThumbnailImage = await uploadOnCloudinary(thumbnail);
     }
-    const blog = Blog.create(req.id, { title, body, tags, thumbnail: { imageUrl: thumbnail?.url, public_id: thumbnail?.public_id } });
+    console.log(uploadedThumbnailImage)
+
+    const blog = await Blog.create({
+        title,
+        body,
+        tags,
+        author: req.id,
+        thumbnail: {
+            imageUrl: uploadedThumbnailImage?.url,
+            public_id: uploadedThumbnailImage?.public_id
+        }
+    });
+
     if (!blog) {
         throw new ApiError(500, "Unable to create blog")
     }
@@ -41,47 +53,44 @@ const getBlogs = asyncHandler(async (req, res) => {
 
 const updateBlog = asyncHandler(async (req, res) => {
 
-    // 1. get blog id from params
     const { blogId } = req.params;
-    const image = req?.files?.thumbnail
-    let newThumbnailImage
-    if (image) {
-        const blog = await Blog.findById(blogId)
-        if (blog) {
-            deleteCloudinaryImage(blog.thumbnail.public_id)
-        }
-
-        newThumbnailImage = await uploadOnCloudinary(image)
-
-    }
 
     if (!blogId) {
         throw new ApiError(400, "Blog ID is required");
     }
 
-    // 2. get updated data from body
-    const { title, content, tags } = req.body;
+    const { title, body, tags } = req.body;
+    const image = req?.file?.path;
 
-    if (!title && !content && !tags) {
-        throw new ApiError(400, "At least one field is required to update");
+    let newThumbnailImage;
+
+    // 1. Upload first (safe)
+    if (image) {
+        newThumbnailImage = await uploadOnCloudinary(image);
+
+        if (!newThumbnailImage) {
+            throw new ApiError(500, "Image upload failed");
+        }
+
+        console.log("Uploaded:", newThumbnailImage.secure_url);
     }
 
-    // 3. find and update blog
+    // 2. Update blog
     const updatedBlog = await Blog.findByIdAndUpdate(
         blogId,
         {
             $set: {
                 ...(title && { title }),
-                ...(content && { content }),
+                ...(body && { body }),
                 ...(tags && { tags }),
                 ...(newThumbnailImage && {
-                    "thumbnail.url": newThumbnailImage.url,
+                    "thumbnail.imageUrl": newThumbnailImage.secure_url,
                     "thumbnail.public_id": newThumbnailImage.public_id
                 })
             }
         },
         {
-            new: true, // return updated doc
+            returnDocument: "after",
             runValidators: true
         }
     );
@@ -90,7 +99,15 @@ const updateBlog = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Blog not found");
     }
 
-    // 4. send response
+    // 3. Delete old image AFTER successful update
+    if (image && updatedBlog?.thumbnail?.public_id) {
+        try {
+            await deleteCloudinaryImage(updatedBlog.thumbnail.public_id);
+        } catch (err) {
+            console.log("Old image deletion failed:", err.message);
+        }
+    }
+
     return res.status(200).json(
         new ApiResponse(200, updatedBlog, "Blog updated successfully")
     );
