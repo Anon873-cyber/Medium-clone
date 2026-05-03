@@ -14,14 +14,16 @@ const createBlog = asyncHandler(async (req, res) => {
     if (thumbnail) {
         uploadedThumbnailImage = await uploadOnCloudinary(thumbnail);
     }
-    const blog = Blog.create({
-             author:req.userId,
-             title,
-             body,
-             tags,
-             thumbnail: { imageUrl: thumbnail?.url, public_id: thumbnail?.public_id } 
-            }
-            );
+    const blog = await Blog.create({
+        title,
+        body,
+        tags,
+        author: req.id,
+        thumbnail: {
+            imageUrl: uploadedThumbnailImage?.url,
+            public_id: uploadedThumbnailImage?.public_id
+        }
+    });
 
     if (!blog) {
         throw new ApiError(500, "Unable to create blog")
