@@ -23,19 +23,6 @@ const createBlog = asyncHandler(async (req, res) => {
             }
             );
 
-    console.log(uploadedThumbnailImage)
-
-    const blog = await Blog.create({
-        title,
-        body,
-        tags,
-        author: req.id,
-        thumbnail: {
-            imageUrl: uploadedThumbnailImage?.url,
-            public_id: uploadedThumbnailImage?.public_id
-        }
-    });
-
     if (!blog) {
         throw new ApiError(500, "Unable to create blog")
     }
