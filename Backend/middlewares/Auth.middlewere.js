@@ -14,9 +14,12 @@ const requireAuth = AsyncHandler(async (req, res, next) => {
 
     try {
         decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        req.userId = decoded?._id; 
+
+        req.id = decoded?._id; 
     } catch (err) {
-        throw new ApiError(401, "Invalid or expired token", "Unauthorized");
+        console.log(err)
+         throw new ApiError(401, "Invalid or expired token", "Unauthorized");
+
     }
 
 

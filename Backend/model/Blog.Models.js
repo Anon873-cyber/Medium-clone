@@ -11,7 +11,7 @@ const BlogSchemea = mongoose.Schema({
         },
     },
     title: String,
-    Body: String,
+    body: String,
     tags: [String],
 }, { timestamps: true });
 
