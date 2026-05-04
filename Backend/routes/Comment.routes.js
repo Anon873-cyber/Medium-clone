@@ -2,6 +2,27 @@ import { Router } from "express";
 
 const router = Router();
 
+import {
+    createcommentController,
+    getcommentsController,
+    deletecommentController,
+    getsingleCommentController,
+    updatesinglecommnentController,
+}from "../controller/comment.controller.js"
+
+
+
+route.route(requireAuth)
+
+router.route("/:blogId/comments")
+.get(getcommentsController)
+.post(createcommentController)
+
+router.route("/comments/:id")
+.get(getsingleCommentController)
+.patch(updatesinglecommnentController)
+.delete(deletecommentController)
+
 // Create + Get comments for a blog
 router.route("/:blogId/comments")
     .post((req, res) => {
