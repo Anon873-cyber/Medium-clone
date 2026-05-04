@@ -1,6 +1,18 @@
 import { Router } from "express";
+import requireAuth from "../middlewares/Auth.middlewere.js";
 
 const router = Router();
+
+import {
+    createcommentController,
+    getcommentsController
+}from "../controller/comment.controller.js"
+
+
+
+route.route(requireAuth)
+
+//connect to the router!!!!!
 
 // Create + Get comments for a blog
 router.route("/:blogId/comments")
