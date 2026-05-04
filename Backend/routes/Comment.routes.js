@@ -5,7 +5,10 @@ const router = Router();
 
 import {
     createcommentController,
-    getcommentsController
+    getcommentsController,
+    deletecommentController,
+    getsingleCommentController,
+    updatesinglecommnentController
 }from "../controller/comment.controller.js"
 
 

@@ -52,8 +52,59 @@ const getcommentsController = asyncHandler(async(req , res)=>{
 })
 
 
+const getsingleCommentController = asyncHandler(async(req , res)=>{
+   const commentId = req.params.id
+
+    const ExistedComment = await Comment.findById(commentId)
+    if(!ExistedComment) throw new ApiError(404,"Comment does not exist")
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,"Comment fetched successfully",ExistedComment)
+    )
+})
+
+const updatesinglecommnentController = asyncHandler(async(req , res)=>{
+    const commentId = req.params.id
+    const {comment} = req.body
+   
+        const ExistedComment = await Comment.findById(commentId)
+        if(!ExistedComment) throw new ApiError(404,"Comment does not exist")
+
+        const updatedComment = await Comment.findByIdAndUpdate(
+            commentId,
+            { text: comment },
+            { new: true }
+        )
+        if(!updatedComment) throw new ApiError(404,"Something went wrong while updating comment")
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(200,"Comment updated successfully",updatedComment)
+        )
+})
+
+const deletecommentController = asyncHandler(async(req , res)=>{
+    const commentId = req.params.id
+    
+    const ExistedComment = await Comment.findById(commentId)
+    if(!ExistedComment) throw new ApiError(404,"Comment does not exist")
+    await Comment.findByIdAndDelete(commentId)
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,"Comment deleted successfully",null)
+    )  
+})
+
+
+
 
 export {
     createcommentController,
-    getcommentsController
+    getcommentsController,
+    deletecommentController,
+    getsingleCommentController,
+    updatesinglecommnentController
 }
