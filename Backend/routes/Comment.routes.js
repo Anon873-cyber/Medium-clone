@@ -3,19 +3,19 @@ import { Router } from "express";
 const router = Router();
 
 import {
-    createcommentController,
-    getcommentsController,
-    deletecommentController,
-    getsingleCommentController,
-    updatesinglecommnentController,
-}from "../controller/comment.controller.js"
+    createCommentController,
+    getCommentsController,
+    deleteCommentController,
+    getSingleCommentController,
+    updateSingleCommnentController,
+}from "../controller/Comment.controller.js"
 
 route.route(requireAuth)
 
-router.route("/:blogId/comments").get(getcommentsController)
-router.route("/:blogId/comments").post(createcommentController)
-router.route("/comments/:id").get(getsingleCommentController)
-router.route("/:blogId/comments").patch(updatesinglecommnentController)
-router.route("/:blogId/comments").delete(deletecommentController)
+router.route("/:blogId/comments").get(getCommentsController)
+router.route("/:blogId/comments").post(createCommentController)
+router.route("/comments/:id").get(getSingleCommentController)
+router.route("/:blogId/comments").patch(updateSingleCommnentController)
+router.route("/:blogId/comments").delete(deleteCommentController)
 
 export default router;

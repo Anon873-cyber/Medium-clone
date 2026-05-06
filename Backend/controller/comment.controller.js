@@ -6,7 +6,7 @@ import { Blog} from "../model/Blog.Models.js";
 
 
 
-const createcommentController = asyncHandler(async(req , res)=>{
+const createCommentController = asyncHandler(async(req , res)=>{
 
     const postId = req.params.blogId
     const {comment } = req.body 
@@ -28,7 +28,7 @@ const createcommentController = asyncHandler(async(req , res)=>{
 
 })
 
-const getcommentsController = asyncHandler(async(req , res)=>{
+const getCommentsController = asyncHandler(async(req , res)=>{
     const postId = req.params.blogId
 
     const ExistedBlog = await Blog.findById(postId)
@@ -45,7 +45,7 @@ const getcommentsController = asyncHandler(async(req , res)=>{
 })
 
 
-const getsingleCommentController = asyncHandler(async(req , res)=>{
+const getSingleCommentController = asyncHandler(async(req , res)=>{
    const commentId = req.params.id
 
     const ExistedComment = await Comment.findById(commentId)
@@ -57,7 +57,7 @@ const getsingleCommentController = asyncHandler(async(req , res)=>{
     )
 })
 
-const updatesinglecommnentController = asyncHandler(async(req , res)=>{
+const updateSingleCommnentController = asyncHandler(async(req , res)=>{
     const commentId = req.params.id
     const {comment} = req.body
    
@@ -78,7 +78,7 @@ const updatesinglecommnentController = asyncHandler(async(req , res)=>{
         )
 })
 
-const deletecommentController = asyncHandler(async(req , res)=>{
+const deleteCommentController = asyncHandler(async(req , res)=>{
     const commentId = req.params.id
     
     const ExistedComment = await Comment.findById(commentId)
@@ -95,10 +95,10 @@ const deletecommentController = asyncHandler(async(req , res)=>{
 
 
 export {
-    createcommentController,
-    getcommentsController,
-    deletecommentController,
-    getsingleCommentController,
-    updatesinglecommnentController
+    createCommentController,
+    getCommentsController,
+    deleteCommentController,
+    getSingleCommentController,
+    updateSingleCommnentController
 
 }
