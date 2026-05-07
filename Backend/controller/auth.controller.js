@@ -58,12 +58,12 @@ const RegisterTempUser = asyncHandler(async (req, res) => {
     const otpValue = generateOTP();
 
     const isOtpSent = await otpMailSender(otpValue, email);
-  
-    if (!isOtpSent.data) {
+    
+   if (!isOtpSent || isOtpSent.rejected.length > 0) {
         throw new ApiError(500, "Unable to send OTP");
     }
 
-     await Otp.create({
+    const otpDoc = await Otp.create({
         otp: otpValue,
         email
     });
@@ -106,7 +106,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
     if (!isValid) {
         throw new ApiError(401, "Incorrect Otp")
     }
-console.log(tempUser.username,tempUser.email,tempUser.password) // it is okay
+   
     const user = await User.create(
         {
             username: tempUser.username,
