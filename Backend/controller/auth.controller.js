@@ -25,7 +25,7 @@ const RegisterTempUser = asyncHandler(async (req, res) => {
     // check if pending user exists
     let pendingUser = await PendingUser.findOne({ email });
 
-  
+
     if (changeOtp && pendingUser) {
 
         // delete old otp
@@ -53,13 +53,13 @@ const RegisterTempUser = asyncHandler(async (req, res) => {
         );
     }
 
- 
+
 
     const otpValue = generateOTP();
 
     const isOtpSent = await otpMailSender(otpValue, email);
-    
-   if (!isOtpSent || isOtpSent.rejected.length > 0) {
+
+    if (!isOtpSent || isOtpSent.rejected.length > 0) {
         throw new ApiError(500, "Unable to send OTP");
     }
 
