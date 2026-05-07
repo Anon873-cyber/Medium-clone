@@ -1,14 +1,20 @@
-import { Resend } from 'resend';
-import { ApiError } from '../utils/api-Error.js';
+import nodemailer from "nodemailer";
+import { ApiError } from "../utils/api-Error.js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // App password
+  },
+});
 
 export const otpMailSender = async (otp, receiverMail) => {
   try {
-    const response = await resend.emails.send({
+    const response = await transporter.sendMail({
       from: process.env.OWNER_MAIL,
       to: receiverMail,
-      subject: 'Your OTP Code',
+      subject: "Your OTP Code",
       html: `
         <div style="font-family: Arial, sans-serif;">
           <h2>Your OTP Code</h2>
@@ -22,7 +28,6 @@ export const otpMailSender = async (otp, receiverMail) => {
     return response;
   } catch (error) {
     console.error("Error sending OTP email:", error);
-
-   throw new ApiError(500,"Unable to send otp , please try again")
+    throw new ApiError(500, "Unable to send otp, please try again");
   }
 };
