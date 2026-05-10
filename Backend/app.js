@@ -15,12 +15,16 @@ app.use(cookieParser())
 
 
 // // import auth routes
-import authRoutes from "./routes/Auth.routes.js"
+import authRoutes from "./routes/auth.routes.js"
 app.use("/api/v1/user",authRoutes)
 
 // import Blog routes
-import blogroutes from "./Routes/Blog.routes.js"
+import blogroutes from "./routes/Blog.routes.js"
 app.use("/api/v1/blog/",blogroutes)
+
+//import comment routes
+import commentroute from "./routes/Comment.routes.js"
+app.use("/api/v1/blog",commentroute)
 
 
 export default app;
