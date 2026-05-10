@@ -34,7 +34,7 @@ const getCommentsController = asyncHandler(async(req , res)=>{
     const ExistedBlog = await Blog.findById(postId)
     if(!ExistedBlog) throw new ApiError(404,"Blog does not exist")
     
-    const allcomments = await Comment.find({postId:blogId})   
+    const allcomments = await Comment.find({postId})   
     
     return res
     .status(200)
