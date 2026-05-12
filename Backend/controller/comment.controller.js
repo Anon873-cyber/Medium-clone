@@ -34,23 +34,21 @@ const getCommentsController = asyncHandler(async(req , res)=>{
     const ExistedBlog = await Blog.findById(postId)
     if(!ExistedBlog) throw new ApiError(404,"Blog does not exist")
     
-    const allcomments = await Comment.find({postId})   
-    const totalComments = await Comment.aggregate([
+       
+   const allcomments = await Comment.find({ postId });
+
+const totalComments = await Comment.countDocuments({ postId });
+
+return res.status(200).json(
+    new ApiResponse(
+        200,
         {
-            $match:{ postId}
+            comments: allcomments,
+            totalComments: totalComments
         },
-        {
-            $count:"totalComments"
-        }
-    ])
- 
-    allcomments.totalComments = totalComments[0]?.totalComments || 0;
- 
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200,"all Comments fetched successfully",allcomments)
+        "All comments fetched successfully"
     )
+);
 
 })
 
