@@ -26,5 +26,9 @@ app.use("/api/v1/blog/",blogroutes)
 import commentroute from "./routes/Comment.routes.js"
 app.use("/api/v1/blog",commentroute)
 
+//import user routes
+import useroute from "./routes/User.routes.js"
+app.use("/api/v1/user",userRoute)
+
 
 export default app;
